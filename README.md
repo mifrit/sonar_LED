@@ -13,3 +13,7 @@ Individual LED sequences can be edited by a seperate python app that ganerates a
 # Software
 - python
 - Tck/Tk GUI to edit the sequence
+
+# Debuging
+
+`pio device monitor -p com24 -b 115200 -f direct`
