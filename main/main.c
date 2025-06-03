@@ -1,8 +1,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/event_groups.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "esp_partition.h"
+#include "wifi_setup.h"
 
 #define delay_ms(x)     vTaskDelay(x/portTICK_PERIOD_MS);
 
@@ -14,7 +16,7 @@ void app_main(void) {
     // access storage partition
     const esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA , ESP_PARTITION_SUBTYPE_ANY, "storage");
     // setup accesspoint
-    //WIFI_init();
+    WIFI_init();
     static char save_data[] = "Das ist ein Test";
     static char read_data[sizeof(save_data)];
 
