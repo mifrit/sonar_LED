@@ -17,11 +17,14 @@ static const char* TAG = "LED";
 
 void app_main(void) {
     int64_t t0=0, t1=0;
+    
+    // access partition
+    esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_TYPE_ANY, "storage");
 
     // setup accesspoint
      WIFI_init();
     // start http server
-    webserver_init();
+    http_server_init();
 
     // ini LED and Button
     gpio_reset_pin(LED_PIN);

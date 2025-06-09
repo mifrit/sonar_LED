@@ -30,7 +30,7 @@ esp_err_t update_post_handler(httpd_req_t *req)
 	int remaining = req->content_len;
 
 	const esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_TYPE_ANY, "storage");
-
+	
 	while (remaining > 0) {
 		int recv_len = httpd_req_recv(req, buf, MIN(remaining, sizeof(buf)));
 
@@ -75,7 +75,7 @@ httpd_uri_t update_post = {
 	.user_ctx = NULL
 };
 
-static esp_err_t http_server_init(void) {
+esp_err_t http_server_init(void) {
 	static httpd_handle_t http_server = NULL;
 
 	httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -86,8 +86,4 @@ static esp_err_t http_server_init(void) {
 	}
 
 	return http_server == NULL ? ESP_FAIL : ESP_OK;
-}
-
-void webserver_init(void) {
-	ESP_ERROR_CHECK(http_server_init());
 }
