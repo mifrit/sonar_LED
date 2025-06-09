@@ -6,6 +6,7 @@
 #include "driver/gpio.h"
 #include "esp_partition.h"
 #include "wifi_setup.h"
+#include "http_upload.h"
 
 #define delay_ms(x)     vTaskDelay(x/portTICK_PERIOD_MS);
 
@@ -16,18 +17,13 @@ static const char* TAG = "LED";
 
 void app_main(void) {
     int64_t t0=0, t1=0;
-    // access storage partition
-    const esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA , ESP_PARTITION_SUBTYPE_ANY, "storage");
+
     // setup accesspoint
-    WIFI_init();
-    OTA_init();
-    static char save_data[] = "Das ist ein Test";
-    static char read_data[sizeof(save_data)];
+     WIFI_init();
+    // start http server
+    webserver_init();
 
-    esp_partition_write(part, 0, save_data, sizeof(save_data));
-    //esp_partition_read(part, 1, read_data, sizeof(save_data)-1);
-    ESP_LOGI(TAG, "Read data: %s", save_data);
-
+    // ini LED and Button
     gpio_reset_pin(LED_PIN);
     gpio_set_direction(LED_PIN, GPIO_MODE_OUTPUT);
     gpio_set_direction(BUTTON_PIN, GPIO_MODE_INPUT);
