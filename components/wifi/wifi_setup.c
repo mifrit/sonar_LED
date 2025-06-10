@@ -152,3 +152,11 @@ void WIFI_init(void) {
     vEventGroupDelete(s_wifi_event_group);
 #endif //WIFI_AP
 }
+
+void WIFI_start(void) {
+    ESP_ERROR_CHECK(esp_wifi_connect());
+}
+
+void WIFI_stop(void) {
+    ESP_ERROR_CHECK(esp_wifi_disconnect());
+}
