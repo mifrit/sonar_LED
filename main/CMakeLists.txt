@@ -6,4 +6,5 @@ idf_component_register(
     REQUIRES        esp_timer
     REQUIRES        wifi
     REQUIRES        http_upload
+    REQUIRES        led_driver 
 )

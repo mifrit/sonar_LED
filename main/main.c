@@ -7,6 +7,7 @@
 #include "esp_partition.h"
 #include "wifi_setup.h"
 #include "http_upload.h"
+#include "ws2812_control.h"
 
 #define delay_ms(x)     vTaskDelay(x/portTICK_PERIOD_MS);
 
@@ -17,7 +18,7 @@ static const char* TAG = "LED";
 
 void app_main(void) {
     int64_t t0=0, t1=0;
-    
+
     // access partition
     esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_TYPE_ANY, "storage");
 
@@ -25,6 +26,9 @@ void app_main(void) {
      WIFI_init();
     // start http server
     http_server_init();
+    // init led_driver
+    ws2812_control_init();
+    struct led_state led_buf;
 
     // ini LED and Button
     gpio_reset_pin(LED_PIN);
@@ -36,6 +40,7 @@ void app_main(void) {
 
     int old_button_level = 1;
 
+    // main loop
     while(1) {
         // falling trigger
         if ((gpio_get_level(BUTTON_PIN) == 0) && (old_button_level == 1)) {
