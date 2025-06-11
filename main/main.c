@@ -88,7 +88,9 @@ void app_main(void) {
                     ESP_LOGI(TAG, "LED speed: %i", led_speed);
                 } else {
                     ESP_LOGI(TAG, "long press: %i", (int)(t1-t0));
-                    //stop led_task
+                    for(int i=0; i<65; i++)
+                        led_buf.leds[i] = 0x000000;
+                    ws2812_write_leds(led_buf);
                     WIFI_start();
                     delay_ms(100);
                     am_I_online = true;
