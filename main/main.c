@@ -8,6 +8,7 @@
 #include "wifi_setup.h"
 #include "http_upload.h"
 #include "ws2812_control.h"
+//#include "rtc_wdt.h"
 
 #define delay_ms(x)     vTaskDelay(x/portTICK_PERIOD_MS);
 
@@ -16,13 +17,13 @@ static const char* TAG = "LED";
 #define LED_PIN 8
 #define BUTTON_PIN 10
 
-#define LED_SPEED_START 10
-#define LED_SPEED_STEP  20
-#define LED_SPEED_STOP  1000
+#define LED_SPEED_START 5000
+#define LED_SPEED_STEP  10000
+#define LED_SPEED_STOP  500000
 int led_speed = LED_SPEED_START;
 
 void app_main(void) {
-    int64_t t0=0, t1=0;
+    int64_t t0=0, t1=0, t_old=0, t_now;
 
     // access partition
     esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_TYPE_ANY, "storage");
@@ -73,7 +74,7 @@ void app_main(void) {
             if ((t1-t0) > 10000) {
                 if((t1-t0) < 2000000) {
                     if(am_I_online) {
-                        WIFI_stop();
+                        //WIFI_stop();
                         ESP_LOGI(TAG, "WiFi stoped");
                         am_I_online = false;
                         led_speed = LED_SPEED_START;
@@ -91,20 +92,22 @@ void app_main(void) {
                     for(int i=0; i<65; i++)
                         led_buf.leds[i] = 0x000000;
                     ws2812_write_leds(led_buf);
-                    WIFI_start();
+                    //WIFI_start();
                     delay_ms(100);
                     am_I_online = true;
                 }
             }
         }
-        vTaskDelay(1);
-        if(esp_timer_get_time()%10000) {
+        t_now = esp_timer_get_time();
+        if(((t_now - t_old) > led_speed) && !am_I_online) {
+        //if(!am_I_online) {
             led_buf.leds[led] = 0x000000;
             led ++;
             if(led>65)
                 led = 0;
             led_buf.leds[led] = 0xffffff;
             ws2812_write_leds(led_buf);                    
+            t_old = t_now;
         }
     }
     

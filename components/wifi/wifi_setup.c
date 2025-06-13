@@ -153,6 +153,32 @@ void WIFI_init(void) {
 #endif //WIFI_AP
 }
 
+#ifdef WIFI_AP
+
+void WIFI_stop(void) {
+/*
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
+
+    if (GetSysConf()->wifiSettings.WiFiMode == WIFI_MODE_APSTA || GetSysConf()->wifiSettings.WiFiMode == WIFI_MODE_STA)
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    else
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
+*/
+}
+
+void WIFI_start(void) {
+/*
+    if (GetSysConf()->wifiSettings.WiFiMode == WIFI_MODE_APSTA)
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+    else if (GetSysConf()->wifiSettings.WiFiMode == WIFI_MODE_STA)
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    else
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+*/
+}
+
+#else    
+
 void WIFI_start(void) {
     ESP_ERROR_CHECK(esp_wifi_connect());
 }
@@ -160,3 +186,5 @@ void WIFI_start(void) {
 void WIFI_stop(void) {
     ESP_ERROR_CHECK(esp_wifi_disconnect());
 }
+
+#endif
