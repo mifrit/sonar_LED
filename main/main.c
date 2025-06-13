@@ -19,7 +19,7 @@ static const char* TAG = "LED";
 
 #define LED_SPEED_START 5000
 #define LED_SPEED_STEP  10000
-#define LED_SPEED_STOP  500000
+#define LED_SPEED_STOP  400000
 int led_speed = LED_SPEED_START;
 
 void app_main(void) {
