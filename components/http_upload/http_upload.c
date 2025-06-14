@@ -8,7 +8,9 @@
 #include <esp_partition.h>
 #include <esp_heap_caps.h>
 #include <http_upload.h>
+#include "esp_log.h"
 
+static const char* TAG = "Upload";
 /*
  * Serve update LED portal (index.html)
  */
@@ -27,9 +29,11 @@ esp_err_t index_get_handler(httpd_req_t *req)
 esp_err_t update_post_handler(httpd_req_t *req)
 {
 	char buf[1000];
+
 	int remaining = req->content_len;
 
 	const esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_TYPE_ANY, "storage");
+	esp_partition_erase_range(part, 0, part->size);
 	
 	while (remaining > 0) {
 		int recv_len = httpd_req_recv(req, buf, MIN(remaining, sizeof(buf)));
@@ -45,11 +49,10 @@ esp_err_t update_post_handler(httpd_req_t *req)
 		}
 
 		// Successful Upload: Flash firmware chunk
-		if (esp_partition_write(part, (req->content_len - remaining), (const void *)buf, recv_len) != ESP_OK) {
+		if (esp_partition_write(part, (req->content_len - remaining), buf, recv_len) != ESP_OK) {
 			httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Flash Error");
 			return ESP_FAIL;
 		}
-
 		remaining -= recv_len;
 	}
 

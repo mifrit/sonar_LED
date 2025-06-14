@@ -17,14 +17,24 @@ static const char* TAG = "LED";
 #define LED_PIN 8
 #define BUTTON_PIN 10
 
-#define LED_SPEED_START 5000
+#define LED_SPEED_START 100
 #define LED_SPEED_STEP  10000
-#define LED_SPEED_STOP  400000
-int led_speed = LED_SPEED_START;
+#define LED_SPEED_STOP  40000
 
 void app_main(void) {
     int64_t t0=0, t1=0, t_old=0, t_now;
 
+    struct led_state led_buf;
+    for(int i=0; i<65; i++)
+        led_buf.leds[i] = 0;
+
+    int led_speed = LED_SPEED_START;
+    uint8_t led_s_num = 0;
+    uint8_t led_s_cnt = 0;
+    uint8_t led_mtx[32];
+    uint32_t led_color[16];
+
+    
     // access partition
     esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_TYPE_ANY, "storage");
 
@@ -34,9 +44,6 @@ void app_main(void) {
     http_server_init();
     // init led_driver
     ws2812_control_init();
-    struct led_state led_buf;
-    for(int i=0; i<65; i++)
-        led_buf.leds[i] = 0;
 
     // ini LED and Button
     gpio_reset_pin(LED_PIN);
@@ -48,7 +55,10 @@ void app_main(void) {
 
     int old_button_level = 1;
     bool am_I_online = true;
-    int led = 0;
+
+    //read LED seq-num and color table
+    esp_partition_read(part, 0, &led_s_num, 1);
+    esp_partition_read(part, 1, led_color, 64);
 
     // main loop
     while(1) {
@@ -78,7 +88,10 @@ void app_main(void) {
                         ESP_LOGI(TAG, "WiFi stoped");
                         am_I_online = false;
                         led_speed = LED_SPEED_START;
-                        //start led_task
+                        //read LED seq-num and color table
+                        esp_partition_read(part, 0, &led_s_num, 1);
+                        esp_partition_read(part, 1, led_color, 64);
+                        led_s_cnt = 0;
                     }
                     else {
                         led_speed += LED_SPEED_STEP;
@@ -100,13 +113,19 @@ void app_main(void) {
         }
         t_now = esp_timer_get_time();
         if(((t_now - t_old) > led_speed) && !am_I_online) {
-        //if(!am_I_online) {
-            led_buf.leds[led] = 0x000000;
-            led ++;
-            if(led>65)
-                led = 0;
-            led_buf.leds[led] = 0xffffff;
-            ws2812_write_leds(led_buf);                    
+            //change picture
+            //read pixel data from flash
+            esp_partition_read(part, (65 + led_s_cnt * 32), led_mtx, 32);
+            int j = 1;
+            for(int i=0; i<32; i++){
+                led_buf.leds[j++] = led_color[led_mtx[i] >> 4];
+                led_buf.leds[j++] = led_color[led_mtx[i] & 0x0f];
+                ws2812_write_leds(led_buf);
+            }
+            //prepare for the next round
+            led_s_cnt ++;
+            if(led_s_cnt > led_s_num)
+                led_s_cnt = 0;
             t_old = t_now;
         }
     }
